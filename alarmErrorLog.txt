@@ -1,0 +1,32 @@
+alarmMonitor:
+	file = arguments[0];
+	timeMarks = new array[]; 
+	lastEmailSended = null;
+
+	function removeMarksOlderThan(date){
+		timeMarks = timeMarks.filter( timeMark => timeMark.before(date) );	
+	}
+
+	function canSendMail(now) {
+		return (timeMarks.size > 10 && (lastEmailSended === null || (now - lastEmailSended) > 60s ))
+	}
+
+	function sendMail(now) {
+		lastEmailSended = now;
+		sendMail("More than 10 errors last minute: now to now - 60s");	
+	}
+
+	checkFileExistisAndCanRead(file);
+
+	return tail(file, (line) => {
+		now = now();
+		timeMarks.push(now)
+		removeMarksOlderThan(now - 60s)
+		if(canSendMail(now)) sendMail(now); 
+	})
+
+Use as:
+	alarmMonitor /var/log/errors.log
+
+
+| ||| | | ||||
